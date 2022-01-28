@@ -1,0 +1,35 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.6.0'
+}
+
+group 'com.opensrp-dhis2-data-transfer'
+version '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+        'Main-Class': 'configuration.Application')
+    }
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+}
+
+dependencies {
+    def ktor_version = "1.6.7"
+    def logback_version = "1.2.10"
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.0"
+    implementation "io.ktor:ktor-client-apache:$ktor_version"
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.ktor:ktor-client-jackson:$ktor_version")
+    implementation('com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.1')
+    implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation("io.ktor:ktor-client-logging:$ktor_version")
+}
