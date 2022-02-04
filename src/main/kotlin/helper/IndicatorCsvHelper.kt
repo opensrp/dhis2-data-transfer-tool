@@ -7,11 +7,14 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import model.DataSet
+import org.slf4j.LoggerFactory
 import pojo.IndicatorCsv
 import utils.Utils
 import wrapper.DataSetWrapper
 
 open class IndicatorCsvHelper {
+
+    val logger = LoggerFactory.getLogger(javaClass)
 
     suspend fun getDataSetDetails(dataSetName: String): DataSet? {
         val client = Application.AppHttpClient.client
@@ -66,13 +69,12 @@ open class IndicatorCsvHelper {
         val indicators: MutableList<IndicatorCsv> = mutableListOf()
 
         if (dataSetElements != null) {
+            logger.info("Indicators found.")
             for (dataSetElement in dataSetElements) {
                 val dataElement = dataSetElement.dataElement ?: return
                 val dataElementName = dataElement.name.trim()
                 val dataElementId = dataElement.id.trim()
                 val categoryCombo = dataElement.categoryCombo
-                val categoryComboName = categoryCombo.name.trim()
-                val categoryComboId = categoryCombo.id
                 if (categoryCombo.categoryOptionCombos != null) {
                     for (categoryOptionCombo in categoryCombo.categoryOptionCombos) {
                         val categoryComboOptionName = categoryOptionCombo.name.trim()
@@ -89,10 +91,13 @@ open class IndicatorCsvHelper {
                     }
                 }
             }
+        } else {
+            logger.info("No Indicators found. Kindly check the dataSet name")
         }
 
         val indicatorCsvFileName: String =
             ApplicationProperty.getProperty(AppConstants.Dhis2.INDICATOR_FILE_NAME) as String
+
         Utils.writeToCsv(indicators, "${dataSet.name.replace(" ", "_")}-$indicatorCsvFileName")
     }
 }

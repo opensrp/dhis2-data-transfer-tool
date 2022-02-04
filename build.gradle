@@ -2,7 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.0'
 }
 
-group 'com.opensrp-dhis2-data-transfer'
+group 'org.smartregister.dhis2-data-transfer-tool'
 version '0.0.1-SNAPSHOT'
 
 repositories {

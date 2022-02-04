@@ -9,6 +9,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
 import model.*
+import org.slf4j.LoggerFactory
 import utils.Utils
 import utils.Utils.idToUUID
 import wrapper.OrganisationUnitLevelWrapper
@@ -16,6 +17,8 @@ import wrapper.OrganisationUnitWrapper
 import kotlin.system.exitProcess
 
 open class LocationImportHelper {
+
+    val logger = LoggerFactory.getLogger(javaClass)
 
     private suspend fun fetchOrganisationUnitLevels(): HashMap<Int, OrganisationUnitLevel> {
         val organisationUnitLevelMap: HashMap<Int, OrganisationUnitLevel> = HashMap()
@@ -59,7 +62,7 @@ open class LocationImportHelper {
         if (!getLocationTagIdByName) {
             for (organisationUnitLevel in organisationUnitLevelMap.values) {
                 if (locationTagNameMap.containsKey(organisationUnitLevel.name)) {
-                    Application.ApplicationLogger.logger.error("LocationTag with the same name exists ${organisationUnitLevel.name}, Kindly fix before import begins")
+                    logger.error("LocationTag with the same name exists ${organisationUnitLevel.name}, Kindly fix before import begins")
                     exitProcess(1)
                 }
             }
@@ -69,9 +72,10 @@ open class LocationImportHelper {
                 val locationTag = LocationTag(0, organisationUnitLevel.name, true, organisationUnitLevel.name)
                 locationTags.add(locationTag)
 
-
+                var mappedByNameFromOpensrp = false;
                 if (getLocationTagIdByName && locationTagNameMap.containsKey(organisationUnitLevel.name)) {
                     locationTag.id = locationTagNameMap[organisationUnitLevel.name]?.id
+                    mappedByNameFromOpensrp = true;
                 }
 
                 val response: HttpResponse = client.put(url) {
@@ -82,12 +86,15 @@ open class LocationImportHelper {
                         append("Content-Type", "application/json")
                     }
                 }
+
+                val mapped = if(mappedByNameFromOpensrp) "mapped" else ""
+
                 if (response.status == HttpStatusCode.Created || response.status == HttpStatusCode.Accepted)
-                    Application.ApplicationLogger.logger.info("Loaded ${organisationUnitLevel.name} LocationTag")
+                    logger.info("Loaded ${organisationUnitLevel.name} LocationTag $mapped")
                 else
-                    Application.ApplicationLogger.logger.error("Problem occurred when loading ${organisationUnitLevel.name} locationTag")
+                    logger.error("Problem occurred when loading ${organisationUnitLevel.name} locationTag")
             } catch (e: Exception) {
-                Application.ApplicationLogger.logger.error(e)
+                logger.error(e)
             }
         }
         Utils.writeToCsv(locationTags, "locationTags.csv")
@@ -149,7 +156,7 @@ open class LocationImportHelper {
             }
             levelCount++
         }
-        Application.ApplicationLogger.logger.info("Loaded Locations")
+        logger.info("Loaded Locations")
     }
 
     private suspend fun populateLocations(
@@ -204,9 +211,9 @@ open class LocationImportHelper {
         }
 
         if (response.status == HttpStatusCode.Created || response.status == HttpStatusCode.Accepted)
-            Application.ApplicationLogger.logger.info("Loaded Locations ${pager?.page}/${pager?.pageCount} , Level:$levelCount/${organisationUnitLevelMap.size}")
+            logger.info("Loaded Locations ${pager?.page}/${pager?.pageCount} , Level:$levelCount/${organisationUnitLevelMap.size}")
         else
-            Application.ApplicationLogger.logger.error("Problem occurred when loading locations ${pager?.page}/${pager?.pageCount} , Level:$levelCount/${organisationUnitLevelMap.size}")
+            logger.error("Problem occurred when loading locations ${pager?.page}/${pager?.pageCount} , Level:$levelCount/${organisationUnitLevelMap.size}")
 
         return locations
     }

@@ -11,7 +11,7 @@ import io.ktor.http.*
 import model.AuthToken
 import org.apache.commons.codec.binary.Base64
 
-object OpenrpAuthHelper {
+object OpensrpAuthHelper {
 
     suspend fun getOpensrpAuthToken(): AuthToken? {
         val client = Application.AppHttpClient.client

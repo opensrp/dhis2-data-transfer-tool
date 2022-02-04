@@ -1,4 +1,4 @@
-# Opensrp DHIS2 Data Transfer
+# OpenSRP DHIS2 Data Transfer
 
 ## Build from source
 ```shell
@@ -13,15 +13,19 @@ java -jar opensrp-dhis2-data-transfer-0.0.1-SNAPSHOT.jar -export i -ds <DataSetN
 ```
 - Import organization units levels as location tags to opensrp server.
 ```shell
-java -jar opensrp-dhis2-data-transfer-0.0.1-SNAPSHOT.jar -export t
+java -jar opensrp-dhis2-data-transfer-0.0.1-SNAPSHOT.jar -import t
 ```
 - Import organization units as locations to opensrp server.
 ```shell
-java -jar opensrp-dhis2-data-transfer-0.0.1-SNAPSHOT.jar -export l
+java -jar opensrp-dhis2-data-transfer-0.0.1-SNAPSHOT.jar -import l
+```
+- Import organization units and organization unit levels to opensrp server.
+```shell
+java -jar opensrp-dhis2-data-transfer-0.0.1-SNAPSHOT.jar -import lt
 ```
 
 ## Configurations
-Configurations are store in `src/main/resources/application.properties`, update to your match your environment.
+Configurations are store in `src/main/resources/application.properties` or `application.properties` (has more precedence), update to your match your environment.
 
 | Configuration                  | Description                                              | Type    | Default               |
 |--------------------------------|----------------------------------------------------------|---------|-----------------------|

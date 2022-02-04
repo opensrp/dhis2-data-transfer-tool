@@ -4,10 +4,12 @@ import AppConstants
 import ApplicationProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
+import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.SingletonSupport
 import helper.IndicatorCsvHelper
 import helper.LocationImportHelper
-import helper.OpenrpAuthHelper.getOpensrpAuthToken
+import helper.OpensrpAuthHelper.getOpensrpAuthToken
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
@@ -21,13 +23,18 @@ import org.slf4j.LoggerFactory
 
 class Application {
 
-    object ApplicationLogger {
-        val logger = LoggerFactory.getLogger(javaClass)
-    }
-
     object ApplicationCsvMapper {
         val csvMapper = CsvMapper().apply {
-            registerModules(KotlinModule())
+            registerModules(
+                KotlinModule.Builder()
+                    .withReflectionCacheSize(512)
+                    .configure(KotlinFeature.NullToEmptyCollection, false)
+                    .configure(KotlinFeature.NullToEmptyMap, false)
+                    .configure(KotlinFeature.NullIsSameAsDefault, false)
+                    .configure(KotlinFeature.SingletonSupport, false)
+                    .configure(KotlinFeature.StrictNullChecks, false)
+                    .build()
+            )
         }
     }
 
@@ -73,38 +80,40 @@ class Application {
     }
 
     companion object {
+        val logger = LoggerFactory.getLogger(javaClass)
+
         @JvmStatic
         fun main(args: Array<String>) {
             if (args.isEmpty()) {
-                ApplicationLogger.logger.error("Command Line Arguments missing")
+                logger.error("Command Line Arguments missing")
                 return
             } else {
 
                 runBlocking {
                     launch {
                         if (args.size < 2) {
-                            ApplicationLogger.logger.error("Command Line Arguments missing")
+                            logger.error("Command Line Arguments missing")
                             return@launch
                         }
                         if (args.contains(AppConstants.Args.IMPORT) && ((args[args.indexOf(AppConstants.Args.IMPORT) + 1] == "tl") || (args[args.indexOf(
                                 AppConstants.Args.IMPORT
                             ) + 1] == AppConstants.Args.LOCATION_AND_TAG))
                         ) {
-                            ApplicationLogger.logger.info("Importing Locations and Location tags")
+                            logger.info("Importing Locations and Location tags")
                             LocationImportHelper().loadLocationTags()
                             LocationImportHelper().loadLocations()
                         } else if (args.contains(AppConstants.Args.IMPORT) && (args[args.indexOf(AppConstants.Args.IMPORT) + 1] == AppConstants.Args.LOCATION)) {
-                            ApplicationLogger.logger.info("Importing Locations")
+                            logger.info("Importing Locations")
                             LocationImportHelper().loadLocations()
                         } else if (args.contains(AppConstants.Args.IMPORT) && (args[args.indexOf(AppConstants.Args.IMPORT) + 1] == AppConstants.Args.LOCATION_TAG)) {
-                            ApplicationLogger.logger.info("Importing Location tags")
+                            logger.info("Importing Location tags")
                             LocationImportHelper().loadLocationTags()
                         } else if (args.size > 2 && args.contains(AppConstants.Args.EXPORT) && (args[args.indexOf(
                                 AppConstants.Args.EXPORT
                             ) + 1] == AppConstants.Args.INDICATOR)
                         ) {
                             if (args.contains(AppConstants.Args.DATASET) && (args[args.indexOf(AppConstants.Args.DATASET) + 1] != "")) {
-                                ApplicationLogger.logger.info("Exporting indicators")
+                                logger.info("Exporting indicators")
                                 val dataSets = args[args.indexOf(AppConstants.Args.DATASET) + 1]
                                 val indicatorCsvHelper = IndicatorCsvHelper()
                                 val dataSetArr = dataSets.split(",")
@@ -113,14 +122,14 @@ class Application {
                                     if (dataSetObject != null) {
                                         indicatorCsvHelper.fetchIndicators(dataSetObject)
                                     } else {
-                                        ApplicationLogger.logger.error("DataSet: $dataSet not found")
+                                        logger.error("DataSet: $dataSet not found")
                                     }
                                 }
                             } else {
-                                ApplicationLogger.logger.error("Arguments mismatch $args")
+                                logger.error("Arguments mismatch $args")
                             }
                         } else {
-                            ApplicationLogger.logger.error("Arguments mismatch $args")
+                            logger.error("Arguments mismatch $args")
                         }
                     }
                 }
