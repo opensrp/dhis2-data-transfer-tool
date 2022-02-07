@@ -7,7 +7,7 @@
 
 ## Run/Execute
 
-- Create indicators .csv file to use for his2 integration on an opensrp app.
+- Create indicators `.csv` file to use for his2 integration on an opensrp app.
 ```shell
 java -jar opensrp-dhis2-data-transfer-0.0.1-SNAPSHOT.jar -export i -ds <DataSetName>
 ```
@@ -25,7 +25,7 @@ java -jar opensrp-dhis2-data-transfer-0.0.1-SNAPSHOT.jar -import lt
 ```
 
 ## Configurations
-Configurations are store in `src/main/resources/application.properties` or `application.properties` (has more precedence), update to your match your environment.
+Configurations are stored in `src/main/resources/application.properties`, if `application.properties` file is not found on .jar or source files working directory the latter has more precedence. Update accordingly.
 
 | Configuration                  | Description                                              | Type    | Default               |
 |--------------------------------|----------------------------------------------------------|---------|-----------------------|
